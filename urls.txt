@@ -1,0 +1,11 @@
+# List of URLs for watcher to visit
+https://www.google.com
+https://www.github.com
+https://www.stackoverflow.com
+https://www.reddit.com
+https://www.wikipedia.org
+https://go.dev
+https://news.ycombinator.com
+https://www.docker.com
+https://www.kubernetes.io
+https://www.cloudflare.com
