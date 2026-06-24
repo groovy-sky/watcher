@@ -1,0 +1,54 @@
+name: Watcher Self-Hosted Run
+
+on:
+  workflow_dispatch:
+
+jobs:
+  run-watcher:
+    runs-on: self-hosted
+    timeout-minutes: 15
+
+    steps:
+      - name: Show runner user
+        shell: bash
+        run: |
+          whoami
+          id
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Verify Chrome/Chromium is available on runner
+        shell: bash
+        run: |
+          set -euo pipefail
+          if command -v google-chrome >/dev/null 2>&1; then
+            google-chrome --version
+          elif command -v chromium >/dev/null 2>&1; then
+            chromium --version
+          elif command -v chromium-browser >/dev/null 2>&1; then
+            chromium-browser --version
+          else
+            echo "Chrome/Chromium is required for chromedp but was not found on PATH."
+            exit 1
+          fi
+
+      - name: Download Go modules
+        run: go mod download
+
+      - name: Run watcher using repository urls.txt
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Serve the local urls.txt so main.go can fetch it as HTTP.
+          python3 -m http.server 18080 --bind 127.0.0.1 >/tmp/watcher-http.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid"' EXIT
+
+          go run . -source http://127.0.0.1:18080/urls.txt
